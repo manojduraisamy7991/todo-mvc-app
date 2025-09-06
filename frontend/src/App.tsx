@@ -1,33 +1,59 @@
-import { useState } from 'react';
-import reactLogo from './assets/react.svg';
-import viteLogo from '/vite.svg';
 import './App.css';
 
-function App() {
-  const [count, setCount] = useState(0);
+import { useState } from 'react';
+import { ToastContainer, toast } from 'react-toastify';
 
+const CREATE_TASK = 'http://localhost:5000/api/todo/create';
+
+function App() {
+  const [task, setTask] = useState({ task: '' });
+
+  const onChangeHandle = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setTask((prev) => ({ ...prev, [name]: value }));
+  };
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    try {
+      const res = await fetch(CREATE_TASK, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(task),
+      });
+
+      const data = await res.json();
+      setTask({ task: '' });
+      toast('🦄 Wow so easy!', {
+        position: 'top-right',
+        autoClose: 1000,
+
+        theme: 'dark',
+      });
+      console.log('Response:', data);
+    } catch (err) {
+      console.error('Frontend fetch error:', err);
+    }
+  };
   return (
     <>
       <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+        <h3>Todo Task</h3>
+        <form onSubmit={handleSubmit}>
+          <input
+            type="text"
+            value={task.task}
+            placeholder="task"
+            name="task"
+            onChange={onChangeHandle}
+            required
+          />
+          <br></br>
+          <button type="submit">Submit</button>
+        </form>
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      <ToastContainer position="top-right" newestOnTop={true} theme="dark" />
     </>
   );
 }
