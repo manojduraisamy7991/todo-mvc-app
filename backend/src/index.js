@@ -12,12 +12,28 @@ const app = express();
 connectDB();
 
 // Middlewares
+const allowedOrigins = [
+  "http://localhost:5173",   // Vite dev
+  "http://localhost:3000",   // CRA dev
+  "https://todo-mvc-app.vercel.app/" // production
+];
+
 app.use(cors({
-  origin: "http://localhost:5173", // your React app or frontend URL
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like Postman or curl)
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("CORS not allowed for this origin: " + origin));
+    }
+  },
   methods: ["GET", "POST", "PUT", "DELETE"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
-}))
+}));
+
 
 app.use(express.json());
 
